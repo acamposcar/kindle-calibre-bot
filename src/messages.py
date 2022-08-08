@@ -41,7 +41,7 @@ To get started, send me a eBook that you want to send to your Kindle or that you
 
 def save_email(email):
     return (f'''
-Email saved: {email}
+✅ Email saved: {email}
 
 To receive eBooks in your Kindle, you will need to add botkindlesend@gmail.com in your <a href='https://www.amazon.com/gp/help/customer/display.html/?nodeId=200767340#approvefrom'>Approved Personal Document E-mail List</a>
 
@@ -50,7 +50,7 @@ If you don't know how to do it, you can use this <a href='https://mytbr.co/how-t
 
 def get_email(email):
     return(f'''
-Your email is {email}
+ℹ️ Your email is {email}
 
 If you want to update your email, just send me your new @kindle email address.
 
@@ -59,7 +59,7 @@ If you want to delete your email from the database, send me /delete command''')
 
 def update_email():
     return(f'''
-If you want to receive the eBook in your Kindle you need to send me your @kindle email address.
+ℹ️ If you want to receive the eBook in your Kindle you need to send me your @kindle email address.
 
     For example: johndoe@kindle.com
 
@@ -70,6 +70,6 @@ If you don't know how to do it, you can use this <a href='https://mytbr.co/how-t
 
 def file_extension_not_valid():
     return(f'''
-The file extension is not valid. I can work with the following file types:
+❌ The file extension is not valid. I can work with the following file types:
 
 AZW, AZW3, AZW4, CBZ, CBR, CBC, CHM, DJVU, DOCX, EPUB, FB2, FBZ, HTML, HTMLZ, LIT, LRF, MOBI, ODT, PDF, PRC, PDB, PML, RB, RTF, SNB, TCR, TXT, TXTZ''')

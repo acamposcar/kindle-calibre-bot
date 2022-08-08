@@ -1,9 +1,7 @@
 #! /usr/bin/python3.8
 
-import logging
-import converter
-import send_email
-from os import remove, path
+
+from os import remove, path, getenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import (
     Updater,
@@ -14,9 +12,16 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 from dbusers import db_users
+from dotenv import load_dotenv
+
 import re
-import secrets
+import logging
+
 import messages
+import converter
+import send_email
+
+
 
 # Global variable to store the user id and ebook file name in memory
 state = {}
@@ -25,12 +30,21 @@ state = {}
 db = db_users()
 
 # Credentials
-ADMIN_ID = secrets.ADMIN_ID
-TELEGRAM_TOKEN = secrets.TELEGRAM_TOKEN
-TEST_TELEGRAM_TOKEN = secrets.TEST_TELEGRAM_TOKEN
-EMAIL = secrets.EMAIL
-EMAIL_PASSWORD = secrets.EMAIL_PASSWORD
-BANNED_USERS = secrets.BANNED_USERS
+load_dotenv()
+
+ADMIN_ID = int(getenv('ADMIN_ID'))
+ENV = getenv('ENV')
+
+if ENV == "prod":
+    TELEGRAM_TOKEN = getenv('TELEGRAM_TOKEN')
+else:
+    TELEGRAM_TOKEN = getenv('TEST_TELEGRAM_TOKEN')
+    
+EMAIL_SENDER = getenv('EMAIL_SENDER')
+EMAIL_PASSWORD = getenv('EMAIL_PASSWORD')
+
+# TODO
+BANNED_USERS = []
 
 # Bytes in 1MB
 MB_IN_BYTES = 1048576
@@ -127,7 +141,7 @@ def delete_command(update: Update, context: CallbackContext) -> None:
     user_id = update.message.chat.id
     db.delete_item(user_id)
     update.message.reply_text(
-        "Your email and user ID have been deleted from the database."
+        "✅ Your email and user ID have been deleted from the database."
     )
 
 
@@ -139,7 +153,7 @@ def email_command(update: Update, context: CallbackContext) -> None:
         email = db.get_email(user_id)
         update.message.reply_text(messages.get_email(email))
     except:
-        update.message.reply_text("Your email is not in the database")
+        update.message.reply_text("ℹ️ Your email is not in the database")
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
@@ -161,7 +175,7 @@ def text_update(update: Update, context: CallbackContext) -> None:
             except Exception as e:
                 logger.error(f"Error adding email to database {str(e)}")
                 update.message.reply_text(
-                    "Error adding email to database. Try again")
+                    "❌ Error adding email to database. Try again")
         else:
             update.message.reply_text("That is not a valid email address")
 
@@ -171,7 +185,7 @@ def download_send(update: Update, context: CallbackContext) -> None:
     print(user_id)
     if user_id in BANNED_USERS:
         update.message.reply_text(
-            "You have been banned for abusing the service"
+            "🚫 You have been banned for abusing the service"
         )
         return
 
@@ -215,7 +229,7 @@ def download_send(update: Update, context: CallbackContext) -> None:
             logger.info("Extension not valid: " + file_extension)
     else:
         context.bot.send_message(
-            chat_id=user_id, text="Error uploading file. Limit size is 20MB"
+            chat_id=user_id, text="❌ Error uploading file. Limit size is 20MB"
         )
         logger.info(str(user_id) + " send bigger file of " +
                     str(file_size) + " MB")
@@ -263,7 +277,7 @@ def downloader(update: Update, context: CallbackContext, selection, extension_ou
         except Exception as e:
             logger.error(str(e))
             context.bot.send_message(
-                chat_id=user_id, text="Error downloading the file. Try again."
+                chat_id=user_id, text="❌ Error downloading the file. Try again."
             )
             clean_ebooks(orig_file_path)
             return
@@ -271,7 +285,7 @@ def downloader(update: Update, context: CallbackContext, selection, extension_ou
             send_mail(context, user_id, email, file_name, orig_file_path)
         else:
             context.bot.send_message(
-                chat_id=user_id, text='Converting eBook "' + file_name + '"...'
+                chat_id=user_id, text='🛠️ Converting eBook "' + file_name + '". Please wait...'
             )
             try:
                 logger.info(
@@ -286,7 +300,7 @@ def downloader(update: Update, context: CallbackContext, selection, extension_ou
             except Exception as e:
                 context.bot.send_message(
                     chat_id=user_id,
-                    text="Error during conversion. Maybe your eBook is DRM locked. Try with another eBook",
+                    text="❌ Error during conversion. Maybe your eBook is DRM locked. Try with another eBook",
                 )
                 logger.error(
                     "Error converting eBook "
@@ -308,32 +322,32 @@ def downloader(update: Update, context: CallbackContext, selection, extension_ou
                 except Exception as e:
                     logger.error("Error sending eBook: " + str(e))
                     context.bot.send_message(
-                        chat_id=user_id, text="Error sending the eBook. Please, try again.",)
+                        chat_id=user_id, text="❌ Error sending the eBook. Please, try again.",)
 
         clean_ebooks(conv_file_path)
         clean_ebooks(orig_file_path)
 
 
-def send_mail(context, user_id, email, file_name, attach_file_path):
+def send_mail(context, user_id, recipient_email, file_name, attach_file_path):
     try:
         send_email.send_email(
-            EMAIL,
+            EMAIL_SENDER,
             EMAIL_PASSWORD,
-            email,
+            recipient_email,
             "Kindle Calibre Bot",
             "",
             attach_file_path,
         )
         context.bot.send_message(
-            chat_id=user_id, text='eBook "' + file_name + '" sent to ' + email
+            chat_id=user_id, text='🚀 "' + file_name + '" sent to ' + recipient_email
         )
         logger.info("Email sent to " + str(user_id))
     except Exception as e:
         logger.error("Error sending email: " + str(e))
         context.bot.send_message(
             chat_id=user_id,
-            text="Error sending the email to "
-            + email
+            text="❌ Error sending the email to "
+            + recipient_email
             + ". Check your email and try again.",
         )
 
@@ -351,7 +365,7 @@ def main():
     db.setup()
 
     """Start the bot."""
-    updater = Updater(TEST_TELEGRAM_TOKEN, use_context=True)
+    updater = Updater(TELEGRAM_TOKEN, use_context=True)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher

@@ -1,5 +1,0 @@
-ADMIN_ID = 9999999
-TELEGRAM_TOKEN = "SuperLargeKey"
-EMAIL = "senderEmail@gmail.com"
-EMAIL_PASSWORD = "StrongPassword"
-BANNED_USERS = [123456789, 22222222]

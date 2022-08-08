@@ -1,3 +1,9 @@
+ARG ADMIN_ID
+ARG TELEGRAM_TOKEN
+ARG EMAIL_SENDER
+ARG EMAIL_PASSWORD
+ARG ENV
+
 FROM linuxserver/calibre
 
 RUN apt-get update && apt-get install -y \

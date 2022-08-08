@@ -6,6 +6,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip3 install python-telegram-bot requests
 
-COPY ./* /bot/
+COPY . /bot/
 
 CMD ["python3","/bot/src/bot.py"]

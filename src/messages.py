@@ -80,6 +80,6 @@ def conversion(file_name, extension_input, extension_output):
     return(f'''
 🛠️ Converting "{file_name}" 
 
-ℹ️ {extension_input} ➡️ {extension_output}
+{extension_input} ➡️ {extension_output}
 
 Please wait...''')

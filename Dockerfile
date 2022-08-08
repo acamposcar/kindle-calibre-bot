@@ -5,9 +5,16 @@ RUN apt-get update && apt-get install -y \
 	python3 \
 	python3-pip
 
-RUN pip3 install python-telegram-bot requests python-dotenv
+COPY requirements.txt /tmp/
+
+RUN pip3 install -r /tmp/requirements.txt
 
 COPY . /bot/
+
+# Create new user because we need to run without root
+RUN useradd newuser
+RUN chown -R newuser /bot/
+USER newuser
 
 WORKDIR /bot
 

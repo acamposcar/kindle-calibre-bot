@@ -73,3 +73,13 @@ def file_extension_not_valid():
 ❌ The file extension is not valid. I can work with the following file types:
 
 AZW, AZW3, AZW4, CBZ, CBR, CBC, CHM, DJVU, DOCX, EPUB, FB2, FBZ, HTML, HTMLZ, LIT, LRF, MOBI, ODT, PDF, PRC, PDB, PML, RB, RTF, SNB, TCR, TXT, TXTZ''')
+
+
+
+def conversion(file_name, extension_input, extension_output):
+    return(f'''
+🛠️ Converting "{file_name}" 
+
+ℹ️ {extension_input} ➡️ {extension_output}
+
+Please wait...''')

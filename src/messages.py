@@ -36,7 +36,7 @@ Commands available:
  
 *************
  
-To get started, send me a eBook that you want to send to your Kindle or that you want to convert to another format.''')
+To get started, send me an eBook that you want to send to your Kindle or that you want to convert to another format.''')
 
 
 def save_email(email):

@@ -7,8 +7,14 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip3 install python-telegram-bot requests python-dotenv
 
-RUN git clone https://github.com/acamposcar/kindle-calibre-bot.git
+COPY . /bot/
 
-WORKDIR /kindle-calibre-bot
+WORKDIR /bot
 
-CMD ["python3","/kindle-calibre-bot/src/bot.py"]
+CMD ["python3","/bot/src/bot.py"]
+
+# RUN git clone https://github.com/acamposcar/kindle-calibre-bot.git
+
+# WORKDIR /kindle-calibre-bot
+
+# CMD ["python3","/kindle-calibre-bot/src/bot.py"]

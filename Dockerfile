@@ -8,4 +8,6 @@ RUN pip3 install python-telegram-bot requests python-dotenv
 
 COPY . /bot/
 
+WORKDIR /bot
+
 CMD ["python3","/bot/src/bot.py"]

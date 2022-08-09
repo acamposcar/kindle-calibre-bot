@@ -11,7 +11,7 @@ from telegram.ext import (
     CallbackContext,
     CallbackQueryHandler,
 )
-from dbusers import db_users
+from db import db_users
 from dotenv import load_dotenv
 
 import re
@@ -139,9 +139,9 @@ def start(update: Update, context: CallbackContext) -> None:
 def delete_command(update: Update, context: CallbackContext) -> None:
     """Delete user from DB"""
     user_id = update.message.chat.id
-    db.delete_item(user_id)
+    db.delete_email(user_id)
     update.message.reply_text(
-        "✅ Your email and user ID have been deleted from the database."
+        "✅ Your email have been deleted from the database."
     )
 
 
@@ -151,6 +151,9 @@ def email_command(update: Update, context: CallbackContext) -> None:
 
     try:
         email = db.get_email(user_id)
+        if email == '':
+            update.message.reply_text("ℹ️ Your email is not in the database")
+            return
         update.message.reply_text(messages.get_email(email))
     except:
         update.message.reply_text("ℹ️ Your email is not in the database")
@@ -318,6 +321,7 @@ def downloader(update: Update, context: CallbackContext, selection, extension_ou
                 try:
                     context.bot.send_document(
                         chat_id=user_id, document=open(conv_file_path, "rb"))
+                    db.add_download(user_id)
                     logger.info(str(user_id) + " eBook downloaded")
                 except Exception as e:
                     logger.error("Error sending eBook: " + str(e))
@@ -341,6 +345,7 @@ def send_mail(context, user_id, recipient_email, file_name, attach_file_path):
         context.bot.send_message(
             chat_id=user_id, text='🚀 "' + file_name + '" sent to ' + recipient_email
         )
+        db.add_download(user_id)
         logger.info("Email sent to " + str(user_id))
     except Exception as e:
         logger.error("Error sending email: " + str(e))

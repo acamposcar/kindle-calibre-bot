@@ -30,3 +30,29 @@ LIT, MOBI, AZW, EPUB, AZW3, FB2, FBZ, DOCX, HTML, PRC, ODT, RTF, PDB, TXT, PDF
 
 - The maximum file size is 20MB
 
+<br>
+
+## Getting started
+
+1. Clone the repository
+
+```
+git clone https://github.com/acamposcar/kindle-calibre-bot.git
+```
+2. Start your PostgreSQL database
+
+3. Create a [Telegram Bot](https://core.telegram.org/bots) with [Bot Father](https://t.me/botfather)
+
+4. Edit .example.env file with your credentials and rename to .env. You will need your own 
+
+5. Building docker image
+
+```
+docker build -t kindle-calibre-bot .
+```
+
+6. Running the docker container
+```
+docker run -p kindle-calibre-bot
+```
+

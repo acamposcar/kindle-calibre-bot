@@ -43,7 +43,7 @@ git clone https://github.com/acamposcar/kindle-calibre-bot.git
 
 3. Create a [Telegram Bot](https://core.telegram.org/bots) with [Bot Father](https://t.me/botfather)
 
-4. Edit .example.env file with your credentials and rename to .env. You will need your own 
+4. Edit .example.env file with your credentials and rename to .env
 
 5. Building docker image
 

@@ -5,7 +5,7 @@
 
 <br>
 
-## Allowed file formats
+# Allowed file formats
 
 This bot uses [Calibre](https://calibre-ebook.com/) under the hood to perform the conversions and supports the following extensions:
 
@@ -21,13 +21,13 @@ LIT, MOBI, AZW, EPUB, AZW3, FB2, FBZ, DOCX, HTML, PRC, ODT, RTF, PDB, TXT, PDF
 
 <br>
 
-## Limitations
+# Limitations
 
 - The maximum file size is 20MB
 
 <br>
 
-## Getting started
+# Getting started
 
 1. Clone the repository
 
@@ -55,15 +55,15 @@ docker run --env-file .env kindle-calibre-bot
 
 <br>
 
-## Docker Images
+# Docker Images
 
 A pre-built Docker image is available in the Docker Hub repository.
 
 [acamposcar/kindle-calibre-bot](https://hub.docker.com/repository/docker/acamposcar/kindle-calibre-bot)
 
-### Usage
+## Usage
 
-docker-compose
+### docker-compose
 
 ```
 ---
@@ -88,7 +88,7 @@ services:
     restart: unless-stopped
 ```
 
-docker cli
+### docker cli
 
 ```
 docker run -d \
@@ -110,7 +110,7 @@ docker run -d \
 
 <br>
 
-## Buy me a coffee
+# Buy me a coffee
 
 Help me to maintain this project and keep it free forever 🚀
 

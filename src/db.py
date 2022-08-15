@@ -4,17 +4,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-HOST=getenv('HOST')
-USER=getenv('USER')
-PASSWORD=getenv('PASSWORD')
-DATABASE=getenv('DATABASE')
-PORT=getenv('PORT')
+HOST = getenv("HOST")
+USER = getenv("USER")
+PASSWORD = getenv("PASSWORD")
+DATABASE = getenv("DATABASE")
+PORT = getenv("PORT")
+
 
 class db_users:
-
     def __init__(self):
 
-        self.conn = psycopg2.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD, port=PORT)
+        self.conn = psycopg2.connect(
+            host=HOST, database=DATABASE, user=USER, password=PASSWORD, port=PORT
+        )
         self.c = self.conn.cursor()
 
     def setup(self):
@@ -51,13 +53,13 @@ class db_users:
 
             # Get current count
             stmt = "SELECT user_downloads FROM users WHERE user_id = (%s)"
-            args = (user_id, )
+            args = (user_id,)
             self.c.execute(stmt, args)
             counter = self.c.fetchone()[0]
 
             # Increment counter
             stmt = "UPDATE users SET user_downloads=(%s) WHERE user_id=(%s)"
-            args = (counter+1, user_id)
+            args = (counter + 1, user_id)
             self.c.execute(stmt, args)
             self.conn.commit()
 
@@ -66,7 +68,10 @@ class db_users:
     def delete_email(self, user_id):
         self.__init__()
         stmt = "UPDATE users SET user_email=(%s) WHERE user_id=(%s)"
-        args = ('', user_id,)
+        args = (
+            "",
+            user_id,
+        )
         self.c.execute(stmt, args)
         self.conn.commit()
         self.conn.close()

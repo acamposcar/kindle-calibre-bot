@@ -1,5 +1,3 @@
-from os import listdir, rename, remove
-from os.path import isfile, join
 import subprocess
 
 

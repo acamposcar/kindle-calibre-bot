@@ -65,8 +65,7 @@ A pre-built Docker image is available in the Docker Hub repository.
 
 docker-compose
 
-## '''
-
+```
 version: "2.1"
 services:
 kindle-calibre-bot:
@@ -74,10 +73,11 @@ image: acamposcar/kindle-calibre-bot:latest
 container_name: kindle-calibre-bot
 environment: - TZ=Europe/Madrid - ADMIN_ID=9999999 - TELEGRAM_TOKEN=SuperLargeKey - TEST_TELEGRAM_TOKEN=Optional - EMAIL_SENDER=senderEmail@gmail.com - EMAIL_PASSWORD=StrongPassword - HOST=postgresql - DATABASE=dbname - USER=username - PASSWORD=StrongPassword - PORT=5623 - ENV=prod
 restart: unless-stopped
-'''
+```
 
 docker cli
-'''
+
+```
 docker run -d \
  --name=kindle-calibre-bot \
  -e ADMIN_ID=9999999 \
@@ -93,7 +93,7 @@ docker run -d \
  -e ENV=prod \
  --restart unless-stopped \
  acamposcar/kindle-calibre-bot:latest
-''''
+```
 
 <br>
 

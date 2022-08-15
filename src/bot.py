@@ -290,7 +290,7 @@ def process_file(
         # No need to convert, same extension
         context.bot.send_message(
             chat_id=user_id,
-            text="ℹ️ eBook already in the selected format",
+            text=f"ℹ️ eBook already in the selected format ({extension_output})",
             parse_mode="html",
         )
         return

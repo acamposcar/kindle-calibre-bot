@@ -54,6 +54,8 @@ MAX_SIZE_MB = 20
 # eBook file folder
 EBOOK_FOLDER = "ebook/"
 
+# Kindle file extension
+KINDLE_EXTENSION = ".azw3"
 
 # File formats allowed
 input_format = [
@@ -250,7 +252,7 @@ def select_action(update: Update, context: CallbackContext) -> None:
     if query.data == "send":
         # send to kindle
         selection = "send"
-        extension_output = ".mobi"
+        extension_output = KINDLE_EXTENSION
         process_file(update, context, selection, extension_output)
     elif query.data in output_format:
         # convert and download
@@ -306,7 +308,7 @@ def process_file(
         clean_ebooks(orig_file_path)
         return
 
-    if file_extension.lower() == ".mobi" and selection == "send":
+    if file_extension.lower() == KINDLE_EXTENSION and selection == "send":
         # No conversion needed, just send to kindle
         send_mail(context, user_id, email, file_name, orig_file_path)
 

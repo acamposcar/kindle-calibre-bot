@@ -189,11 +189,15 @@ def update_email(update: Update, context: CallbackContext) -> None:
 def show_menu(update: Update, context: CallbackContext) -> None:
     user_id = update.message.chat.id
 
-    db.add_item(user_id, "")
+    try:
+        db.add_item(user_id, "")
+        if db.is_banned(user_id):
+            update.message.reply_text("🚫 You have been banned for abusing the service")
+            return
 
-    if db.is_banned(user_id):
-        update.message.reply_text("🚫 You have been banned for abusing the service")
-        return
+    except Exception as e:
+        logger.error(f"Error checking database: {str(e)}")
+        update.message.reply_text("❌ Error reading database. Try again")
 
     file = update.message.document.file_name
     _, file_extension = path.splitext(file)

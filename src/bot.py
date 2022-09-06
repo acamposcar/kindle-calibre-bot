@@ -42,9 +42,6 @@ else:
 EMAIL_SENDER = getenv("EMAIL_SENDER")
 EMAIL_PASSWORD = getenv("EMAIL_PASSWORD")
 
-# TODO
-BANNED_USERS = []
-
 # Bytes in 1MB
 MB_IN_BYTES = 1048576
 
@@ -192,7 +189,9 @@ def update_email(update: Update, context: CallbackContext) -> None:
 def show_menu(update: Update, context: CallbackContext) -> None:
     user_id = update.message.chat.id
 
-    if user_id in BANNED_USERS:
+    db.add_item(user_id, "")
+
+    if db.is_banned(user_id):
         update.message.reply_text("🚫 You have been banned for abusing the service")
         return
 
@@ -267,7 +266,6 @@ def process_file(
 
     user_id = update.effective_chat.id
     file, file_id = state.get(user_id)
-    db.add_item(user_id, "")
 
     file_name, file_extension = path.splitext(file)
     orig_file_path = f"{EBOOK_FOLDER}{file_name}{file_extension}"

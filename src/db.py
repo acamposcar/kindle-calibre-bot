@@ -46,22 +46,12 @@ class db_users:
 
     def add_download(self, user_id):
         self.__init__()
-        self.c.execute("SELECT user_id FROM users")
-        all_users = {x[0] for x in self.c.fetchall()}
 
-        if user_id in all_users:
-
-            # Get current count
-            stmt = "SELECT user_downloads FROM users WHERE user_id = (%s)"
-            args = (user_id,)
-            self.c.execute(stmt, args)
-            counter = self.c.fetchone()[0]
-
-            # Increment counter
-            stmt = "UPDATE users SET user_downloads=(%s) WHERE user_id=(%s)"
-            args = (counter + 1, user_id)
-            self.c.execute(stmt, args)
-            self.conn.commit()
+        # Increment user downloads
+        stmt = "UPDATE users SET user_downloads=user_downloads+1 WHERE user_id=(%s)"
+        args = (user_id,)
+        self.c.execute(stmt, args)
+        self.conn.commit()
 
         self.conn.close()
 
@@ -76,11 +66,20 @@ class db_users:
         self.conn.commit()
         self.conn.close()
 
+    def is_banned(self, user_id):
+        self.__init__()
+        stmt = "SELECT banned FROM users WHERE user_id = (%s)"
+        args = (user_id,)
+        self.c.execute(stmt, args)
+        banned = self.c.fetchone()[0]
+        self.conn.close()
+        return banned
+
     def get_email(self, user_id):
         self.__init__()
         stmt = "SELECT user_email FROM users WHERE user_id = (%s)"
         args = (user_id,)
         self.c.execute(stmt, args)
-        email = [x[0] for x in self.c.fetchall()]
+        email = self.c.fetchone()[0]
         self.conn.close()
-        return email[0]
+        return email

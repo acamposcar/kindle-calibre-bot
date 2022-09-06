@@ -394,6 +394,18 @@ def send_log(update: Update, context: CallbackContext):
         context.bot.send_document(chat_id=ADMIN_ID, document=open("log.log", "rb"))
 
 
+def total_downloads(update: Update, context: CallbackContext):
+    # Send the total downloads to admin user
+    user_id = update.effective_chat.id
+    if user_id == ADMIN_ID:
+        total_downloads = db.get_total_downloads()
+        context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=f"ℹ️ Total downloads: {total_downloads}",
+            parse_mode="html",
+        )
+
+
 def main():
     """Start database."""
     db.setup()
@@ -410,6 +422,7 @@ def main():
     dispatcher.add_handler(CommandHandler("delete", delete_command))
     dispatcher.add_handler(CommandHandler("email", email_command))
     dispatcher.add_handler(CommandHandler("log", send_log))
+    dispatcher.add_handler(CommandHandler("downloads", total_downloads))
 
     # on text message
     dispatcher.add_handler(

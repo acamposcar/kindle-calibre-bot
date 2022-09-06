@@ -83,3 +83,11 @@ class db_users:
         email = self.c.fetchone()[0]
         self.conn.close()
         return email
+
+    def get_total_downloads(self):
+        self.__init__()
+        stmt = "SELECT SUM(user_downloads) FROM users"
+        self.c.execute(stmt)
+        total_downloads = self.c.fetchone()[0]
+        self.conn.close()
+        return total_downloads

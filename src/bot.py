@@ -192,7 +192,9 @@ def show_menu(update: Update, context: CallbackContext) -> None:
     try:
         db.add_item(user_id, "")
         if db.is_banned(user_id):
-            update.message.reply_text("🚫 You have been banned for abusing the service")
+            update.message.reply_text(
+                "🚫 You have been temporary banned for abusing the service"
+            )
             return
 
     except Exception as e:

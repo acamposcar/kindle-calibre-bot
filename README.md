@@ -79,11 +79,11 @@ services:
       - TEST_TELEGRAM_TOKEN=Optional
       - EMAIL_SENDER=senderEmail@gmail.com
       - EMAIL_PASSWORD=StrongPassword
-      - HOST=postgresql
-      - DATABASE=dbname
-      - USER=username
-      - PASSWORD=StrongPassword
-      - PORT=5623
+      - PGHOST=postgresql
+      - PGDATABASE=dbname
+      - PGUSER=username
+      - PGPASSWORD=StrongPassword
+      - PGPORT=5623
       - ENV=prod
     restart: unless-stopped
 ```
@@ -98,11 +98,11 @@ docker run -d \
   -e TEST_TELEGRAM_TOKEN=Optional \
   -e EMAIL_SENDER=senderEmail@gmail.com \
   -e EMAIL_PASSWORD=StrongPassword \
-  -e HOST=postgresql \
-  -e DATABASE=dbname \
-  -e USER=username \
-  -e PASSWORD=StrongPassword \
-  -e PORT=5623 \
+  -e PGHOST=postgresql \
+  -e PGDATABASE=dbname \
+  -e PGUSER=username \
+  -e PGPASSWORD=StrongPassword \
+  -e PGPORT=5623 \
   -e ENV=prod \
   --restart unless-stopped \
   acamposcar/kindle-calibre-bot:latest

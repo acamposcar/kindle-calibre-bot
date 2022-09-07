@@ -409,7 +409,7 @@ def send_log(update: Update, context: CallbackContext):
     if user_id != ADMIN_ID:
         return
 
-    update.reply_document(document="log.log")
+    context.bot.send_document(chat_id=ADMIN_ID, document=open("log.log", "rb"))
 
 
 def total_downloads(update: Update, context: CallbackContext):

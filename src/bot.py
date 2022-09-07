@@ -52,7 +52,7 @@ MAX_SIZE_MB = 20
 EBOOK_FOLDER = "ebook/"
 
 # Kindle file extension
-KINDLE_EXTENSION = ".azw3"
+KINDLE_EXTENSION = ".mobi"
 
 # File formats allowed
 input_format = [

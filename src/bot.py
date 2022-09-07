@@ -137,14 +137,21 @@ def start(update: Update, context: CallbackContext) -> None:
     help_command(update, context)
     user_id = update.message.chat.id
     logger.info(f"{str(user_id)} started the bot")
-    db.add_item(user_id, "")
+    try:
+        db.add_user(user_id)
+    except Exception as e:
+        logger.error(f"Error adding user: {str(e)}")
 
 
 def delete_command(update: Update, context: CallbackContext) -> None:
     """Delete email from DB"""
     user_id = update.message.chat.id
-    db.delete_email(user_id)
-    update.message.reply_text("✅ Your email has been deleted from the database.")
+    try:
+        db.delete_email(user_id)
+        update.message.reply_text("✅ Your email has been deleted from the database.")
+    except Exception as e:
+        logger.error(f"Error deleting email: {str(e)}")
+        update.message.reply_text("❌ Error deleting email from the database.")
 
 
 def email_command(update: Update, context: CallbackContext) -> None:
@@ -178,7 +185,7 @@ def update_email(update: Update, context: CallbackContext) -> None:
         return
 
     try:
-        db.add_item(user_id, text_received)
+        db.update_email(user_id, text_received)
         logger.info(f"{user_id} saved email address")
         update.message.reply_html(messages.save_email(text_received))
     except Exception as e:
@@ -190,7 +197,7 @@ def show_menu(update: Update, context: CallbackContext) -> None:
     user_id = update.message.chat.id
 
     try:
-        db.add_item(user_id, "")
+        db.add_user(user_id)
         if db.is_banned(user_id):
             update.message.reply_text(
                 "🚫 You have been temporary banned for abusing the service"
@@ -202,11 +209,11 @@ def show_menu(update: Update, context: CallbackContext) -> None:
         update.message.reply_text("❌ Error reading database. Try again")
 
     file = update.message.document.file_name
-    _, file_extension = path.splitext(file)
+    _, extension_input = path.splitext(file)
     file_id = update.message.document.file_id
     file_size = update.message.document.file_size / MB_IN_BYTES
 
-    logger.info(f"{str(user_id)} send file: {file_extension}")
+    logger.info(f"{str(user_id)} send file: {extension_input}")
 
     if file_size > MAX_SIZE_MB:
         # Check if file is too big
@@ -216,13 +223,13 @@ def show_menu(update: Update, context: CallbackContext) -> None:
         logger.info(f"{str(user_id)} send file of {str(file_size)}MB. Limit exceeded")
         return
 
-    if file_extension.lower() not in input_format:
+    if extension_input.lower() not in input_format:
         # Check if file is valid
         context.bot.send_message(
             chat_id=user_id,
             text=messages.file_extension_not_valid(),
         )
-        logger.info(f"Extension not valid: {file_extension}")
+        logger.info(f"Extension not valid: {extension_input}")
         return
 
     state[user_id] = [file, file_id]
@@ -273,8 +280,8 @@ def process_file(
     user_id = update.effective_chat.id
     file, file_id = state.get(user_id)
 
-    file_name, file_extension = path.splitext(file)
-    orig_file_path = f"{EBOOK_FOLDER}{file_name}{file_extension}"
+    file_name, extension_input = path.splitext(file)
+    orig_file_path = f"{EBOOK_FOLDER}{file_name}{extension_input}"
     conv_file_path = f"{EBOOK_FOLDER}{file_name}{extension_output}"
 
     # Get user email
@@ -292,7 +299,7 @@ def process_file(
         )
         return
 
-    if selection == "download" and file_extension == extension_output:
+    if selection == "download" and extension_input == extension_output:
         # No need to convert, same extension
         context.bot.send_message(
             chat_id=user_id,
@@ -312,17 +319,19 @@ def process_file(
         clean_ebooks(orig_file_path)
         return
 
-    if file_extension.lower() == KINDLE_EXTENSION and selection == "send":
+    if extension_input.lower() == KINDLE_EXTENSION and selection == "send":
         # No conversion needed, just send to kindle
-        send_mail(context, user_id, email, file_name, orig_file_path)
+        send_mail(context, user_id, email, file_name, orig_file_path, extension_input)
 
     else:
         # The file must be converted
         context.bot.send_message(
             chat_id=user_id,
-            text=messages.conversion(file_name, file_extension, extension_output),
+            text=messages.conversion(file_name, extension_input, extension_output),
         )
-        logger.info(f"{str(user_id)} converting {file_extension} to {extension_output}")
+        logger.info(
+            f"{str(user_id)} converting {extension_input} to {extension_output}"
+        )
 
         try:
             converter.convert(extension_output, orig_file_path, conv_file_path)
@@ -333,7 +342,7 @@ def process_file(
                 text="❌ Error during conversion. Maybe your eBook is DRM locked. Try with another eBook",
             )
             logger.error(
-                f"Error during conversion from {file_extension} to {extension_output}: {str(e)}"
+                f"Error during conversion from {extension_input} to {extension_output}: {str(e)}"
             )
 
             clean_ebooks(conv_file_path)
@@ -342,7 +351,9 @@ def process_file(
 
         if selection == "send":
             # Send to kindle
-            send_mail(context, user_id, email, file_name, conv_file_path)
+            send_mail(
+                context, user_id, email, file_name, conv_file_path, extension_input
+            )
         else:
             # Send converted file to telegram
             try:
@@ -350,7 +361,7 @@ def process_file(
                 context.bot.send_document(
                     chat_id=user_id, document=open(conv_file_path, "rb")
                 )
-                db.add_download(user_id)
+                db.add_download(user_id, extension_input, extension_output, False)
                 logger.info(f"{str(user_id)} eBook downloaded")
 
             except Exception as e:
@@ -364,7 +375,9 @@ def process_file(
     clean_ebooks(orig_file_path)
 
 
-def send_mail(context, user_id, recipient_email, file_name, attach_file_path):
+def send_mail(
+    context, user_id, recipient_email, file_name, attach_file_path, extension_input
+):
 
     try:
         send_email.send_email(
@@ -378,7 +391,7 @@ def send_mail(context, user_id, recipient_email, file_name, attach_file_path):
         context.bot.send_message(
             chat_id=user_id, text=f'🚀 "{file_name}" sent to {recipient_email}'
         )
-        db.add_download(user_id)
+        db.add_download(user_id, extension_input, KINDLE_EXTENSION, True)
         logger.info(f"Email sent to {str(user_id)}")
 
     except Exception as e:
@@ -392,20 +405,42 @@ def send_mail(context, user_id, recipient_email, file_name, attach_file_path):
 def send_log(update: Update, context: CallbackContext):
     # Send the log file to admin user
     user_id = update.effective_chat.id
-    if user_id == ADMIN_ID:
-        context.bot.send_document(chat_id=ADMIN_ID, document=open("log.log", "rb"))
+    if user_id != ADMIN_ID:
+        return
+
+    update.reply_document(document="log.log")
 
 
 def total_downloads(update: Update, context: CallbackContext):
     # Send the total downloads to admin user
     user_id = update.effective_chat.id
-    if user_id == ADMIN_ID:
+
+    if user_id != ADMIN_ID:
+        return
+
+    try:
         total_downloads = db.get_total_downloads()
-        context.bot.send_message(
-            chat_id=ADMIN_ID,
-            text=f"ℹ️ Total downloads: {total_downloads}",
-            parse_mode="html",
-        )
+        update.message.reply_text(f"ℹ️ Total downloads: {total_downloads}")
+
+    except Exception as e:
+        logger.error(f"Error getting total downloads: {str(e)}")
+        update.message.reply_text("❌ Error getting total downloads.")
+
+
+def top_downloads(update: Update, context: CallbackContext):
+    # Send the top downloads to admin user
+    user_id = update.effective_chat.id
+
+    if user_id != ADMIN_ID:
+        return
+
+    try:
+        top_downloads = db.get_top_users_downloads()
+        update.message.reply_text(f"ℹ️ Top downloads: {top_downloads}")
+
+    except Exception as e:
+        logger.error(f"Error getting top downloads: {str(e)}")
+        update.message.reply_text("❌ Error getting top downloads.")
 
 
 def main():
@@ -425,6 +460,7 @@ def main():
     dispatcher.add_handler(CommandHandler("email", email_command))
     dispatcher.add_handler(CommandHandler("log", send_log))
     dispatcher.add_handler(CommandHandler("downloads", total_downloads))
+    dispatcher.add_handler(CommandHandler("top", top_downloads))
 
     # on text message
     dispatcher.add_handler(

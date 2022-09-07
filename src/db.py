@@ -4,11 +4,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-HOST = getenv("HOST")
-USER = getenv("USER")
-PASSWORD = getenv("PASSWORD")
-DATABASE = getenv("DATABASE")
-PORT = getenv("PORT")
+HOST = getenv("PGHOST")
+USER = getenv("PGUSER")
+PASSWORD = getenv("PGPASSWORD")
+DATABASE = getenv("PGDATABASE")
+PORT = getenv("PGPORT")
 
 
 class db_users:
@@ -20,36 +20,40 @@ class db_users:
         self.c = self.conn.cursor()
 
     def setup(self):
-        table = "CREATE TABLE IF NOT EXISTS users (user_id bigint PRIMARY KEY, user_email text, user_downloads integer)"
-        self.c.execute(table)
+        users_table = "CREATE TABLE IF NOT EXISTS users (user_id bigint PRIMARY KEY, email text DEFAULT '', banned boolean DEFAULT false)"
+        self.c.execute(users_table)
+        downloads_table = """CREATE TABLE IF NOT EXISTS downloads (download_id SERIAL PRIMARY KEY, 
+        user_id bigint references users(user_id) NOT NULL, date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, input text, output text,
+        email boolean)"""
+        self.c.execute(downloads_table)
         self.conn.commit()
         self.conn.close()
 
-    def add_item(self, user_id, user_email):
+    def add_user(self, user_id):
         self.__init__()
-        self.c.execute("SELECT user_id FROM users")
-        all_users = {x[0] for x in self.c.fetchall()}
-
-        if user_id in all_users:
-            if "@kindle.com" in user_email:
-                stmt = "UPDATE users SET user_email=(%s) WHERE user_id=(%s)"
-                args = (user_email, user_id)
-                self.c.execute(stmt, args)
-                self.conn.commit()
-        else:
-            stmt = "INSERT INTO users (user_id, user_email, user_downloads) VALUES (%s, %s, %s)"
-            args = (user_id, user_email, 0)
-            self.c.execute(stmt, args)
-            self.conn.commit()
+        stmt = (
+            "INSERT INTO users (user_id) VALUES (%s) ON CONFLICT (user_id) DO NOTHING;"
+        )
+        args = (user_id,)
+        self.c.execute(stmt, args)
+        self.conn.commit()
 
         self.conn.close()
 
-    def add_download(self, user_id):
+    def update_email(self, user_id, user_email):
+        self.__init__()
+        stmt = "UPDATE users SET email=(%s) WHERE user_id=(%s)"
+        args = (user_email, user_id)
+        self.c.execute(stmt, args)
+        self.conn.commit()
+        self.conn.close()
+
+    def add_download(self, user_id, input_extension, output_extension, is_email):
         self.__init__()
 
         # Increment user downloads
-        stmt = "UPDATE users SET user_downloads=user_downloads+1 WHERE user_id=(%s)"
-        args = (user_id,)
+        stmt = "INSERT INTO downloads(user_id, input, output, email) VALUES (%s, %s, %s, %s)"
+        args = (user_id, input_extension, output_extension, is_email)
         self.c.execute(stmt, args)
         self.conn.commit()
 
@@ -57,11 +61,8 @@ class db_users:
 
     def delete_email(self, user_id):
         self.__init__()
-        stmt = "UPDATE users SET user_email=(%s) WHERE user_id=(%s)"
-        args = (
-            "",
-            user_id,
-        )
+        stmt = "UPDATE users SET email='' WHERE user_id=(%s)"
+        args = (user_id,)
         self.c.execute(stmt, args)
         self.conn.commit()
         self.conn.close()
@@ -77,7 +78,7 @@ class db_users:
 
     def get_email(self, user_id):
         self.__init__()
-        stmt = "SELECT user_email FROM users WHERE user_id = (%s)"
+        stmt = "SELECT email FROM users WHERE user_id = (%s)"
         args = (user_id,)
         self.c.execute(stmt, args)
         email = self.c.fetchone()[0]
@@ -86,8 +87,16 @@ class db_users:
 
     def get_total_downloads(self):
         self.__init__()
-        stmt = "SELECT SUM(user_downloads) FROM users"
+        stmt = "SELECT count(*) FROM downloads"
         self.c.execute(stmt)
         total_downloads = self.c.fetchone()[0]
         self.conn.close()
         return total_downloads
+
+    def get_top_users_downloads(self):
+        self.__init__()
+        stmt = "SELECT user_id,count(*) FROM downloads GROUP BY user_id ORDER BY count(*) DESC LIMIT 10"
+        self.c.execute(stmt)
+        user_downloads = self.c.fetchall()
+        self.conn.close()
+        return user_downloads

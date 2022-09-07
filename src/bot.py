@@ -402,6 +402,35 @@ def send_mail(
         )
 
 
+def send_message_to_all_users(update: Update, context: CallbackContext):
+    # Send a message to all users in the database
+
+    user_id = update.effective_chat.id
+
+    if user_id != ADMIN_ID:
+        return
+
+    message = " ".join(context.args)
+
+    if message == "" or message == " ":
+        update.message.reply_text("❌ You must specify a message")
+        return
+
+    try:
+        users = db.get_all_users()
+    except Exception as e:
+        logger.error(f"Error getting all users from DB: {str(e)}")
+        return
+
+    for user in users:
+        try:
+            context.bot.send_message(chat_id=user[0], text=message)
+        except Exception as e:
+            logger.error(f"Error sending broadcast message to {user[0]}: {str(e)}")
+
+    update.message.reply_text("✅ Message sent to all users")
+
+
 def send_log(update: Update, context: CallbackContext):
     # Send the log file to admin user
     user_id = update.effective_chat.id
@@ -410,22 +439,6 @@ def send_log(update: Update, context: CallbackContext):
         return
 
     context.bot.send_document(chat_id=ADMIN_ID, document=open("log.log", "rb"))
-
-
-def total_downloads(update: Update, context: CallbackContext):
-    # Send the total downloads to admin user
-    user_id = update.effective_chat.id
-
-    if user_id != ADMIN_ID:
-        return
-
-    try:
-        total_downloads = db.get_total_downloads()
-        update.message.reply_text(f"ℹ️ Total downloads: {total_downloads}")
-
-    except Exception as e:
-        logger.error(f"Error getting total downloads: {str(e)}")
-        update.message.reply_text("❌ Error getting total downloads.")
 
 
 def stats_command(update: Update, context: CallbackContext):
@@ -478,6 +491,9 @@ def main():
     dispatcher.add_handler(CommandHandler("email", email_command))
     dispatcher.add_handler(CommandHandler("log", send_log))
     dispatcher.add_handler(CommandHandler("stats", stats_command))
+    dispatcher.add_handler(
+        CommandHandler("send", send_message_to_all_users, pass_args=True)
+    )
 
     # on text message
     dispatcher.add_handler(

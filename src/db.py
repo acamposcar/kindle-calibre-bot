@@ -132,3 +132,11 @@ class db_users:
         total_users = self.c.fetchone()[0]
         self.conn.close()
         return total_users
+
+    def get_all_users(self):
+        self.__init__()
+        stmt = "SELECT user_id FROM users"
+        self.c.execute(stmt)
+        users = self.c.fetchall()
+        self.conn.close()
+        return users

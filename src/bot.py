@@ -122,18 +122,18 @@ logger.addHandler(fh)
 
 
 def clean_ebooks(file):
-    """Remove file if file exist"""
+    # Remove file if file exist
     if path.isfile(file):
         remove(file)
 
 
 def validate_email(email):
-    """Check if email is valid"""
+    # Check if email is valid
     return bool(re.search(r"^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", email))
 
 
 def start(update: Update, context: CallbackContext) -> None:
-    """When a user starts the bot, send help message and save its Telegram ID in DB"""
+    # When a user starts the bot, send help message and save its Telegram ID in DB
     help_command(update, context)
     user_id = update.message.chat.id
     logger.info(f"{str(user_id)} started the bot")
@@ -144,7 +144,7 @@ def start(update: Update, context: CallbackContext) -> None:
 
 
 def delete_command(update: Update, context: CallbackContext) -> None:
-    """Delete email from DB"""
+    # Delete email from DB
     user_id = update.message.chat.id
     try:
         db.delete_email(user_id)
@@ -155,7 +155,7 @@ def delete_command(update: Update, context: CallbackContext) -> None:
 
 
 def email_command(update: Update, context: CallbackContext) -> None:
-    """Check if email exists in DB and send email"""
+    # Check if email exists in DB and send email
     user_id = update.message.chat.id
 
     try:
@@ -169,7 +169,7 @@ def email_command(update: Update, context: CallbackContext) -> None:
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
-    """Send help message when the command /help is issued"""
+    # Send help message when the command /help is issued
     update.message.reply_html(messages.help())
 
 
@@ -405,6 +405,7 @@ def send_mail(
 def send_log(update: Update, context: CallbackContext):
     # Send the log file to admin user
     user_id = update.effective_chat.id
+
     if user_id != ADMIN_ID:
         return
 
@@ -427,7 +428,7 @@ def total_downloads(update: Update, context: CallbackContext):
         update.message.reply_text("❌ Error getting total downloads.")
 
 
-def top_downloads(update: Update, context: CallbackContext):
+def stats_command(update: Update, context: CallbackContext):
     # Send the top downloads to admin user
     user_id = update.effective_chat.id
 
@@ -435,19 +436,36 @@ def top_downloads(update: Update, context: CallbackContext):
         return
 
     try:
-        top_downloads = db.get_top_users_downloads()
-        update.message.reply_text(f"ℹ️ Top downloads: {top_downloads}")
+        top_user_downloads = db.get_top_users_downloads()
+        monthly_user_downloads = db.get_top_users_monthly_downloads()
+        total_downloads = db.get_total_downloads()
+        monthly_downloads = db.get_monthly_downloads()
+        downloads_by_month = db.get_downloads_by_month()
+        total_users = db.get_total_users()
+
+        update.message.reply_text(f"ℹ️ Total downloads: {total_downloads}")
+        update.message.reply_text(
+            f"ℹ️ Total downloads last 30 days: {monthly_downloads}"
+        )
+        update.message.reply_text(
+            f"ℹ️ Total users downloads [10]: {top_user_downloads}"
+        )
+        update.message.reply_text(
+            f"ℹ️ Monthly users downloads [10]: {monthly_user_downloads}"
+        )
+        update.message.reply_text(f"ℹ️ Downloads by month: {downloads_by_month}")
+        update.message.reply_text(f"ℹ️ Total users: {total_users}")
 
     except Exception as e:
-        logger.error(f"Error getting top downloads: {str(e)}")
-        update.message.reply_text("❌ Error getting top downloads.")
+        logger.error(f"Error getting stats: {str(e)}")
+        update.message.reply_text("❌ Error getting stats.")
 
 
 def main():
-    """Start database."""
+    # Start database
     db.setup()
 
-    """Start the bot."""
+    # Start the bot
     updater = Updater(TELEGRAM_TOKEN, use_context=True)
 
     # Get the dispatcher to register handlers
@@ -459,8 +477,7 @@ def main():
     dispatcher.add_handler(CommandHandler("delete", delete_command))
     dispatcher.add_handler(CommandHandler("email", email_command))
     dispatcher.add_handler(CommandHandler("log", send_log))
-    dispatcher.add_handler(CommandHandler("downloads", total_downloads))
-    dispatcher.add_handler(CommandHandler("top", top_downloads))
+    dispatcher.add_handler(CommandHandler("stats", stats_command))
 
     # on text message
     dispatcher.add_handler(

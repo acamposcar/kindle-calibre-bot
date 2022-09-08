@@ -20,11 +20,22 @@ class db_users:
         self.c = self.conn.cursor()
 
     def setup(self):
-        users_table = "CREATE TABLE IF NOT EXISTS users (user_id bigint PRIMARY KEY, email text DEFAULT '', banned boolean DEFAULT false)"
+        users_table = """
+        CREATE TABLE IF NOT EXISTS users (
+            user_id bigint PRIMARY KEY, 
+            email text DEFAULT '', 
+            banned boolean DEFAULT false, 
+            joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"""
         self.c.execute(users_table)
-        downloads_table = """CREATE TABLE IF NOT EXISTS downloads (download_id SERIAL PRIMARY KEY, 
-        user_id bigint references users(user_id) NOT NULL, date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, input text, output text,
-        email boolean)"""
+        downloads_table = """
+            CREATE TABLE IF NOT EXISTS downloads (
+            download_id SERIAL PRIMARY KEY, 
+            user_id bigint references users(user_id) NOT NULL, 
+            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+            input text, 
+            output text,
+            email boolean)
+            """
         self.c.execute(downloads_table)
         self.conn.commit()
         self.conn.close()
@@ -140,3 +151,12 @@ class db_users:
         users = self.c.fetchall()
         self.conn.close()
         return users
+
+    def get_user_downloads_today(self, user_id):
+        self.__init__()
+        stmt = "SELECT count(*) FROM downloads WHERE user_id = (%s) AND date >= CURRENT_DATE"
+        args = (user_id,)
+        self.c.execute(stmt, args)
+        downloads_today = self.c.fetchone()[0]
+        self.conn.close()
+        return downloads_today

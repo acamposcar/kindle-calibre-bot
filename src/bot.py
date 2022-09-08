@@ -54,6 +54,9 @@ EBOOK_FOLDER = "ebook/"
 # Kindle file extension
 KINDLE_EXTENSION = ".mobi"
 
+# Daily conversion limit per user
+DAILY_CONVERSION_LIMIT = 2
+
 # File formats allowed
 input_format = [
     ".azw",
@@ -196,18 +199,6 @@ def update_email(update: Update, context: CallbackContext) -> None:
 def show_menu(update: Update, context: CallbackContext) -> None:
     user_id = update.message.chat.id
 
-    try:
-        db.add_user(user_id)
-        if db.is_banned(user_id):
-            update.message.reply_text(
-                "🚫 You have been temporary banned for abusing the service"
-            )
-            return
-
-    except Exception as e:
-        logger.error(f"Error checking database: {str(e)}")
-        update.message.reply_text("❌ Error reading database. Try again")
-
     file = update.message.document.file_name
     _, extension_input = path.splitext(file)
     file_id = update.message.document.file_id
@@ -278,6 +269,36 @@ def process_file(
 ) -> None:
 
     user_id = update.effective_chat.id
+
+    try:
+        db.add_user(user_id)
+
+        if db.is_banned(user_id):
+            context.bot.send_message(
+                chat_id=user_id,
+                text="🚫 You have been temporary banned for abusing the service",
+            )
+            return
+
+        if db.get_user_downloads_today(user_id) >= DAILY_CONVERSION_LIMIT:
+            context.bot.send_message(
+                chat_id=user_id,
+                text=f"🚫 You have reached the maximum number of conversions for today ({DAILY_CONVERSION_LIMIT}). Try again tomorrow",
+            )
+            context.bot.send_message(
+                chat_id=user_id,
+                text="ℹ️ This limit has been applied to avoid abuse of the service that would prevent proper operation for other users",
+            )
+            return
+
+    except Exception as e:
+        logger.error(f"Error reading database: {str(e)}")
+        context.bot.send_message(
+            chat_id=user_id,
+            text="❌ Error reading database. Try again",
+        )
+        return
+
     file, file_id = state.get(user_id)
 
     file_name, extension_input = path.splitext(file)

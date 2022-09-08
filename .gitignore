@@ -1,6 +1,7 @@
 db.sqlite
 Docker
 *.bak
+synology.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

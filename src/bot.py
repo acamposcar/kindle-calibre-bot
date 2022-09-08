@@ -299,7 +299,16 @@ def process_file(
         )
         return
 
-    file, file_id = state.get(user_id)
+    try:
+        file, file_id = state.get(user_id)
+    except Exception as e:
+        # This error usually means that bot has been restarted
+        logger.error(f"Error reading global dictionary): {str(e)}")
+        context.bot.send_message(
+            chat_id=user_id,
+            text="❌ Internal error. Please, send the file again",
+        )
+        return
 
     file_name, extension_input = path.splitext(file)
     orig_file_path = f"{EBOOK_FOLDER}{file_name}{extension_input}"

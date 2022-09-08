@@ -55,7 +55,7 @@ EBOOK_FOLDER = "ebook/"
 KINDLE_EXTENSION = ".mobi"
 
 # Daily conversion limit per user
-DAILY_CONVERSION_LIMIT = 2
+DAILY_CONVERSION_LIMIT = 10
 
 # File formats allowed
 input_format = [

@@ -303,6 +303,7 @@ def process_file(
         file, file_id = state.get(user_id)
     except Exception as e:
         # This error usually means that bot has been restarted
+        # and the state has been lost
         logger.error(f"Error reading global dictionary): {str(e)}")
         context.bot.send_message(
             chat_id=user_id,

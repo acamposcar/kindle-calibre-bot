@@ -349,10 +349,6 @@ async def process_file(
         down_file = await context.bot.get_file(file_id)
         await down_file.download(
             orig_file_path,
-            read_timeout=60,
-            write_timeout=60,
-            connect_timeout=60,
-            pool_timeout=60,
         )
     except Exception as e:
         logger.error(f"Error downloading the file: {str(e)}")
@@ -404,10 +400,6 @@ async def process_file(
                 await context.bot.send_document(
                     chat_id=user_id,
                     document=open(conv_file_path, "rb"),
-                    read_timeout=60,
-                    write_timeout=60,
-                    connect_timeout=60,
-                    pool_timeout=60,
                 )
                 db.add_download(user_id, extension_input, extension_output, False)
                 logger.info(f"{str(user_id)} eBook downloaded")

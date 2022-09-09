@@ -57,6 +57,9 @@ KINDLE_EXTENSION = ".mobi"
 # Daily conversion limit per user
 DAILY_CONVERSION_LIMIT = 10
 
+# Download timeout
+DOWNLOAD_TIMEOUT = 60
+
 # File formats allowed
 input_format = [
     ".azw",
@@ -346,8 +349,8 @@ async def process_file(
 
     try:
         # Download file
-        down_file = await context.bot.get_file(file_id)
-        await down_file.download(orig_file_path)
+        down_file = await context.bot.get_file(file_id, timeout=DOWNLOAD_TIMEOUT)
+        await down_file.download(orig_file_path, timeout=DOWNLOAD_TIMEOUT)
     except Exception as e:
         logger.error(f"Error downloading the file: {str(e)}")
         await context.bot.send_message(
@@ -396,7 +399,9 @@ async def process_file(
             try:
 
                 await context.bot.send_document(
-                    chat_id=user_id, document=open(conv_file_path, "rb")
+                    chat_id=user_id,
+                    document=open(conv_file_path, "rb"),
+                    timeout=DOWNLOAD_TIMEOUT,
                 )
                 db.add_download(user_id, extension_input, extension_output, False)
                 logger.info(f"{str(user_id)} eBook downloaded")

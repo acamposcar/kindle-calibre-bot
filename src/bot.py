@@ -1,15 +1,15 @@
 #! /usr/bin/python3.8
 
-
 from os import remove, path, getenv
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
-    Updater,
+    Application,
     CommandHandler,
     MessageHandler,
-    Filters,
+    ContextTypes,
     CallbackContext,
     CallbackQueryHandler,
+    filters,
 )
 from db import db_users
 from dotenv import load_dotenv
@@ -135,9 +135,9 @@ def validate_email(email):
     return bool(re.search(r"^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", email))
 
 
-def start(update: Update, context: CallbackContext) -> None:
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # When a user starts the bot, send help message and save its Telegram ID in DB
-    help_command(update, context)
+    await help_command(update, context)
     user_id = update.message.chat.id
     logger.info(f"{str(user_id)} started the bot")
     try:
@@ -146,43 +146,45 @@ def start(update: Update, context: CallbackContext) -> None:
         logger.error(f"Error adding user: {str(e)}")
 
 
-def delete_command(update: Update, context: CallbackContext) -> None:
+async def delete_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Delete email from DB
     user_id = update.message.chat.id
     try:
         db.delete_email(user_id)
-        update.message.reply_text("✅ Your email has been deleted from the database.")
+        await update.message.reply_text(
+            "✅ Your email has been deleted from the database."
+        )
     except Exception as e:
         logger.error(f"Error deleting email: {str(e)}")
-        update.message.reply_text("❌ Error deleting email from the database.")
+        await update.message.reply_text("❌ Error deleting email from the database.")
 
 
-def email_command(update: Update, context: CallbackContext) -> None:
+async def email_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Check if email exists in DB and send email
     user_id = update.message.chat.id
 
     try:
         email = db.get_email(user_id)
         if email == "":
-            update.message.reply_text("ℹ️ Your email is not in the database")
+            await update.message.reply_text("ℹ️ Your email is not in the database")
             return
-        update.message.reply_text(messages.get_email(email))
+        await update.message.reply_text(messages.get_email(email))
     except:
-        update.message.reply_text("ℹ️ Your email is not in the database")
+        await update.message.reply_text("ℹ️ Your email is not in the database")
 
 
-def help_command(update: Update, context: CallbackContext) -> None:
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Send help message when the command /help is issued
-    update.message.reply_html(messages.help())
+    await update.message.reply_html(messages.help())
 
 
-def update_email(update: Update, context: CallbackContext) -> None:
+async def update_email(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     user_id = update.message.chat.id
     text_received = update.message.text.lower()
 
     if "@kindle.com" not in text_received or not validate_email(text_received):
-        update.message.reply_text(
+        await update.message.reply_text(
             "❌ That is not a valid email address. It should be xxx@kindle.com"
         )
         return
@@ -190,13 +192,13 @@ def update_email(update: Update, context: CallbackContext) -> None:
     try:
         db.update_email(user_id, text_received)
         logger.info(f"{user_id} saved email address")
-        update.message.reply_html(messages.save_email(text_received))
+        await update.message.reply_html(messages.save_email(text_received))
     except Exception as e:
         logger.error(f"Error adding email to database: {str(e)}")
-        update.message.reply_text("❌ Error adding email to database. Try again")
+        await update.message.reply_text("❌ Error adding email to database. Try again")
 
 
-def show_menu(update: Update, context: CallbackContext) -> None:
+async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.message.chat.id
 
     file = update.message.document.file_name
@@ -208,7 +210,7 @@ def show_menu(update: Update, context: CallbackContext) -> None:
 
     if file_size > MAX_SIZE_MB:
         # Check if file is too big
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id, text="❌ Error uploading file. Limit size is 20MB"
         )
         logger.info(f"{str(user_id)} send file of {str(file_size)}MB. Limit exceeded")
@@ -216,7 +218,7 @@ def show_menu(update: Update, context: CallbackContext) -> None:
 
     if extension_input.lower() not in input_format:
         # Check if file is valid
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id,
             text=messages.file_extension_not_valid(),
         )
@@ -244,27 +246,27 @@ def show_menu(update: Update, context: CallbackContext) -> None:
         ],
     ]
     reply_markup = InlineKeyboardMarkup(menu_donwload)
-    update.message.reply_text(
+    await update.message.reply_text(
         "Send to Kindle or Convert & Download:", reply_markup=reply_markup
     )
 
 
-def select_action(update: Update, context: CallbackContext) -> None:
+async def select_action(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
 
     if query.data == "send":
         # send to kindle
         selection = "send"
         extension_output = KINDLE_EXTENSION
-        process_file(update, context, selection, extension_output)
     elif query.data in output_format:
         # convert and download
         selection = "download"
         extension_output = query.data
-        process_file(update, context, selection, extension_output)
+
+    await process_file(update, context, selection, extension_output)
 
 
-def process_file(
+async def process_file(
     update: Update, context: CallbackContext, selection, extension_output
 ) -> None:
 
@@ -273,19 +275,22 @@ def process_file(
     try:
         db.add_user(user_id)
 
-        if db.is_banned(user_id):
-            context.bot.send_message(
+        if db.is_banned(user_id) and user_id != ADMIN_ID:
+            await context.bot.send_message(
                 chat_id=user_id,
                 text="🚫 You have been temporary banned for abusing the service",
             )
             return
 
-        if db.get_user_downloads_today(user_id) >= DAILY_CONVERSION_LIMIT:
-            context.bot.send_message(
+        if (
+            db.get_user_downloads_today(user_id) >= DAILY_CONVERSION_LIMIT
+            and user_id != ADMIN_ID
+        ):
+            await context.bot.send_message(
                 chat_id=user_id,
                 text=f"🚫 You have reached the maximum number of conversions for today ({DAILY_CONVERSION_LIMIT}). Try again tomorrow",
             )
-            context.bot.send_message(
+            await context.bot.send_message(
                 chat_id=user_id,
                 text="ℹ️ This limit has been applied to avoid abuse of the service that would prevent proper operation for other users",
             )
@@ -293,7 +298,7 @@ def process_file(
 
     except Exception as e:
         logger.error(f"Error reading database: {str(e)}")
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id,
             text="❌ Error reading database. Try again",
         )
@@ -305,7 +310,7 @@ def process_file(
         # This error usually means that bot has been restarted
         # and the state has been lost
         logger.error(f"Error reading global dictionary): {str(e)}")
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id,
             text="❌ Internal error. Please, send the file again",
         )
@@ -323,7 +328,7 @@ def process_file(
 
     if email == "" and selection == "send":
         # Email not found and user want to send to kindle
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id,
             text=messages.update_email(),
             parse_mode="html",
@@ -332,7 +337,7 @@ def process_file(
 
     if selection == "download" and extension_input == extension_output:
         # No need to convert, same extension
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id,
             text=f"ℹ️ eBook already in the selected format ({extension_output})",
             parse_mode="html",
@@ -341,10 +346,11 @@ def process_file(
 
     try:
         # Download file
-        context.bot.get_file(file_id).download(orig_file_path)
+        down_file = await context.bot.get_file(file_id)
+        await down_file.download(orig_file_path)
     except Exception as e:
         logger.error(f"Error downloading the file: {str(e)}")
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id, text="❌ Error downloading the file. Try again."
         )
         clean_ebooks(orig_file_path)
@@ -356,7 +362,7 @@ def process_file(
 
     else:
         # The file must be converted
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id,
             text=messages.conversion(file_name, extension_input, extension_output),
         )
@@ -368,7 +374,7 @@ def process_file(
             converter.convert(extension_output, orig_file_path, conv_file_path)
 
         except Exception as e:
-            context.bot.send_message(
+            await context.bot.send_message(
                 chat_id=user_id,
                 text="❌ Error during conversion. Maybe your eBook is DRM locked. Try with another eBook",
             )
@@ -389,7 +395,7 @@ def process_file(
             # Send converted file to telegram
             try:
 
-                context.bot.send_document(
+                await context.bot.send_document(
                     chat_id=user_id, document=open(conv_file_path, "rb")
                 )
                 db.add_download(user_id, extension_input, extension_output, False)
@@ -397,7 +403,7 @@ def process_file(
 
             except Exception as e:
                 logger.error("Error sending eBook: " + str(e))
-                context.bot.send_message(
+                await context.bot.send_message(
                     chat_id=user_id,
                     text="❌ Error sending the eBook. Please, try again.",
                 )
@@ -406,7 +412,7 @@ def process_file(
     clean_ebooks(orig_file_path)
 
 
-def send_mail(
+async def send_mail(
     context, user_id, recipient_email, file_name, attach_file_path, extension_input
 ):
 
@@ -419,7 +425,7 @@ def send_mail(
             "",
             attach_file_path,
         )
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id, text=f'🚀 "{file_name}" sent to {recipient_email}'
         )
         db.add_download(user_id, extension_input, KINDLE_EXTENSION, True)
@@ -427,13 +433,13 @@ def send_mail(
 
     except Exception as e:
         logger.error(f"Error sending the email: {str(e)}")
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=user_id,
             text=f"❌ Error sending the email to {recipient_email}. Please, check your email and try again.",
         )
 
 
-def send_message_to_all_users(update: Update, context: CallbackContext):
+async def send_message_to_all_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Send a message to all users in the database
 
     user_id = update.effective_chat.id
@@ -444,7 +450,7 @@ def send_message_to_all_users(update: Update, context: CallbackContext):
     message = " ".join(context.args)
 
     if message == "" or message == " ":
-        update.message.reply_text("❌ You must specify a message")
+        await update.message.reply_text("❌ You must specify a message")
         return
 
     try:
@@ -455,24 +461,24 @@ def send_message_to_all_users(update: Update, context: CallbackContext):
 
     for user in users:
         try:
-            context.bot.send_message(chat_id=user[0], text=message)
+            await context.bot.send_message(chat_id=user[0], text=message)
         except Exception as e:
             logger.error(f"Error sending broadcast message to {user[0]}: {str(e)}")
 
-    update.message.reply_text("✅ Message sent to all users")
+    await update.message.reply_text("✅ Message sent to all users")
 
 
-def send_log(update: Update, context: CallbackContext):
+async def send_log(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Send the log file to admin user
     user_id = update.effective_chat.id
 
     if user_id != ADMIN_ID:
         return
 
-    context.bot.send_document(chat_id=ADMIN_ID, document=open("log.log", "rb"))
+    await context.bot.send_document(chat_id=ADMIN_ID, document=open("log.log", "rb"))
 
 
-def stats_command(update: Update, context: CallbackContext):
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Send the top downloads to admin user
     user_id = update.effective_chat.id
 
@@ -487,22 +493,22 @@ def stats_command(update: Update, context: CallbackContext):
         downloads_by_month = db.get_downloads_by_month()
         total_users = db.get_total_users()
 
-        update.message.reply_text(f"ℹ️ Total downloads: {total_downloads}")
-        update.message.reply_text(
+        await update.message.reply_text(f"ℹ️ Total downloads: {total_downloads}")
+        await update.message.reply_text(
             f"ℹ️ Total downloads last 30 days: {monthly_downloads}"
         )
-        update.message.reply_text(
+        await update.message.reply_text(
             f"ℹ️ Total users downloads [10]: {top_user_downloads}"
         )
-        update.message.reply_text(
+        await update.message.reply_text(
             f"ℹ️ Monthly users downloads [10]: {monthly_user_downloads}"
         )
-        update.message.reply_text(f"ℹ️ Downloads by month: {downloads_by_month}")
-        update.message.reply_text(f"ℹ️ Total users: {total_users}")
+        await update.message.reply_text(f"ℹ️ Downloads by month: {downloads_by_month}")
+        await update.message.reply_text(f"ℹ️ Total users: {total_users}")
 
     except Exception as e:
         logger.error(f"Error getting stats: {str(e)}")
-        update.message.reply_text("❌ Error getting stats.")
+        await update.message.reply_text("❌ Error getting stats.")
 
 
 def main():
@@ -510,37 +516,30 @@ def main():
     db.setup()
 
     # Start the bot
-    updater = Updater(TELEGRAM_TOKEN, use_context=True)
-
-    # Get the dispatcher to register handlers
-    dispatcher = updater.dispatcher
+    application = Application.builder().token(TELEGRAM_TOKEN).build()
 
     # on different commands
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help_command))
-    dispatcher.add_handler(CommandHandler("delete", delete_command))
-    dispatcher.add_handler(CommandHandler("email", email_command))
-    dispatcher.add_handler(CommandHandler("log", send_log))
-    dispatcher.add_handler(CommandHandler("stats", stats_command))
-    dispatcher.add_handler(
-        CommandHandler("send", send_message_to_all_users, pass_args=True)
-    )
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("delete", delete_command))
+    application.add_handler(CommandHandler("email", email_command))
+    application.add_handler(CommandHandler("log", send_log))
+    application.add_handler(CommandHandler("stats", stats_command))
+    application.add_handler(CommandHandler("send", send_message_to_all_users))
 
     # on text message
-    dispatcher.add_handler(
-        MessageHandler(Filters.text & ~Filters.command, update_email)
+    application.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, update_email)
     )
 
     # on query selection
-    dispatcher.add_handler(CallbackQueryHandler(select_action))
+    application.add_handler(CallbackQueryHandler(select_action, block=False))
 
     # on file
-    updater.dispatcher.add_handler(MessageHandler(Filters.document, show_menu))
+    application.add_handler(MessageHandler(filters.ATTACHMENT, show_menu))
 
     # Start the Bot
-    updater.start_polling()
-
-    updater.idle()
+    application.run_polling()
 
 
 if __name__ == "__main__":

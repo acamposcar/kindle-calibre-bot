@@ -256,12 +256,17 @@ def select_action(update: Update, context: CallbackContext) -> None:
         # send to kindle
         selection = "send"
         extension_output = KINDLE_EXTENSION
-        process_file(update, context, selection, extension_output)
+
     elif query.data in output_format:
         # convert and download
         selection = "download"
         extension_output = query.data
-        process_file(update, context, selection, extension_output)
+
+    else:
+        logger.error(f"Error selecting action: {query.data}")
+        return
+
+    process_file(update, context, selection, extension_output)
 
 
 def process_file(
@@ -341,6 +346,9 @@ def process_file(
 
     try:
         # Download file
+        context.bot.send_message(
+            chat_id=user_id, text="⏬ Downloading file to the server..."
+        )
         context.bot.get_file(file_id).download(orig_file_path)
     except Exception as e:
         logger.error(f"Error downloading the file: {str(e)}")

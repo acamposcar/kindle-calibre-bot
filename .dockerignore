@@ -1,4 +1,5 @@
 *.bak
+synology.txt
 
 # Environments
 .env

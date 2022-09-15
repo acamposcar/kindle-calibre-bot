@@ -20,7 +20,7 @@ import logging
 
 import messages
 import converter
-import send_email
+import gmail
 
 
 # Global variable to store the user id and ebook file name in memory
@@ -436,7 +436,7 @@ async def send_mail(
 ):
 
     try:
-        send_email.send_email(
+        gmail.send_email(
             EMAIL_SENDER,
             EMAIL_PASSWORD,
             recipient_email,

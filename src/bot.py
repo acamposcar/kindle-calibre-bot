@@ -552,7 +552,7 @@ def main():
     )
 
     # on query selection
-    application.add_handler(CallbackQueryHandler(select_action, block=False))
+    application.add_handler(CallbackQueryHandler(select_action))
 
     # on file
     application.add_handler(MessageHandler(filters.ATTACHMENT, show_menu))

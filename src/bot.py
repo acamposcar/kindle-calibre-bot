@@ -11,6 +11,7 @@ from telegram.ext import (
     CallbackQueryHandler,
     filters,
 )
+import subprocess
 from db import db_users
 from dotenv import load_dotenv
 
@@ -374,6 +375,17 @@ async def process_file(
 
         try:
             converter.convert(extension_output, orig_file_path, conv_file_path)
+        except subprocess.TimeoutExpired:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text="❌ Conversion timeout. Try again or send another file",
+            )
+            logger.error(
+                f"Conversion timeout from {extension_input} to {extension_output}"
+            )
+            clean_ebooks(orig_file_path)
+            clean_ebooks(orig_file_path)
+            return
 
         except Exception as e:
             await context.bot.send_message(

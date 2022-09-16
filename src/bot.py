@@ -1,7 +1,7 @@
 #! /usr/bin/python3.8
 
 from os import remove, path, getenv
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, constants
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -14,7 +14,7 @@ from telegram.ext import (
 import subprocess
 from db import db_users
 from dotenv import load_dotenv
-
+from utils import send_action
 import re
 import logging
 
@@ -271,6 +271,7 @@ async def select_action(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await process_file(update, context, selection, extension_output)
 
 
+@send_action(constants.ChatAction.UPLOAD_DOCUMENT)
 async def process_file(
     update: Update, context: CallbackContext, selection, extension_output
 ) -> None:

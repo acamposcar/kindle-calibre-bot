@@ -406,7 +406,7 @@ async def process_file(
 
         if selection == "send":
             # Send to kindle
-            send_mail(
+            await send_mail(
                 context, user_id, email, file_name, conv_file_path, extension_input
             )
         else:

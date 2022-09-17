@@ -366,7 +366,9 @@ async def process_file(
 
     if extension_input.lower() == KINDLE_EXTENSION and selection == "send":
         # No conversion needed, just send to kindle
-        send_mail(context, user_id, email, file_name, orig_file_path, extension_input)
+        await send_mail(
+            context, user_id, email, file_name, orig_file_path, extension_input
+        )
 
     else:
         # The file must be converted

@@ -9,4 +9,4 @@ def convert(extension_output, original_file, converted_file):
     if extension_output in ignored_extensions:
         return
 
-    subprocess.call(["ebook-convert", original_file, converted_file], timeout=150)
+    subprocess.call(["ebook-convert", original_file, converted_file], timeout=120)

@@ -22,4 +22,4 @@ jobs:
         uses: docker/build-push-action@v3.1.1
         with:
           push: true
-          tags: acamposcar/kindle-calibre-bot:latest
+          tags: acamposcar/kindle-calibre-bot:canary-build

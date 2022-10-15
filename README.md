@@ -59,7 +59,7 @@ docker run --env-file .env kindle-calibre-bot
 
 A pre-built Docker image is available in the Docker Hub repository.
 
-[acamposcar/kindle-calibre-bot](https://hub.docker.com/repository/docker/acamposcar/kindle-calibre-bot)
+[acamposcar/kindle-calibre-bot](https://hub.docker.com/r/acamposcar/kindle-calibre-bot)
 
 ## Usage
 

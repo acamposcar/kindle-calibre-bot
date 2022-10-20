@@ -23,43 +23,21 @@ LIT, MOBI, AZW, EPUB, AZW3, FB2, FBZ, DOCX, HTML, PRC, ODT, RTF, PDB, TXT, PDF
 
 # Limitations
 
-- The maximum file size is 20MB
+- Maximum file size per e-book: 20MB
+- e-books converted/sent per user per day: 10
 
-<br>
-
-# Getting started
-
-1. Clone the repository
-
-```
-git clone https://github.com/acamposcar/kindle-calibre-bot.git
-```
-
-2. Start your PostgreSQL database
-
-3. Create a [Telegram Bot](https://core.telegram.org/bots) with [Bot Father](https://t.me/botfather)
-
-4. Edit .example.env file with your credentials and rename to .env
-
-5. Building docker image
-
-```
-docker build -t kindle-calibre-bot .
-```
-
-6. Running the docker container
-
-```
-docker run --env-file .env kindle-calibre-bot
-```
-
-<br>
-
-# Docker Images
+# Docker Image
 
 A pre-built Docker image is available in the Docker Hub repository.
 
 [acamposcar/kindle-calibre-bot](https://hub.docker.com/r/acamposcar/kindle-calibre-bot)
+
+## Things you need (environment variables)
+
+- (TELEGRAM_TOKEN) Telegran Bot Authentication Token: create a [Telegram Bot](https://core.telegram.org/bots) with [Bot Father](https://t.me/botfather)
+- (PG*) PostgreSQL database
+- (EMAIL*) Google email to send the e-books to the Kindle
+- (ADMIN_ID) Your [Telegram ID](https://www.alphr.com/telegram-find-user-id/)
 
 ## Usage
 
@@ -106,6 +84,33 @@ docker run -d \
   -e ENV=prod \
   --restart unless-stopped \
   acamposcar/kindle-calibre-bot:latest
+```
+<br>
+
+# Build your own image
+
+1. Clone the repository
+
+```
+git clone https://github.com/acamposcar/kindle-calibre-bot.git
+```
+
+2. Start your PostgreSQL database
+
+3. Create a [Telegram Bot](https://core.telegram.org/bots) with [Bot Father](https://t.me/botfather)
+
+4. Edit .example.env file with your credentials and rename to .env
+
+5. Building docker image
+
+```
+docker build -t kindle-calibre-bot .
+```
+
+6. Running the docker container
+
+```
+docker run --env-file .env kindle-calibre-bot
 ```
 
 <br>

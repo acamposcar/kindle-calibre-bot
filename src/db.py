@@ -101,7 +101,7 @@ class db_users:
 
     def get_monthly_downloads(self):
         self.__init__()
-        stmt = "SELECT count(*) FROM downloads WHERE date >= NOW() - INTERVAL '30 days'"
+        stmt = "SELECT count(*) FROM downloads WHERE date >= date('now', '-30 days')"
         self.c.execute(stmt)
         month_downloads = self.c.fetchone()[0]
         self.conn.close()
@@ -117,7 +117,7 @@ class db_users:
 
     def get_top_users_monthly_downloads(self):
         self.__init__()
-        stmt = "SELECT user_id,count(*) FROM downloads WHERE date >= NOW() - INTERVAL '30 days' GROUP BY user_id ORDER BY count(*) DESC LIMIT 10"
+        stmt = "SELECT user_id,count(*) FROM downloads WHERE date >= date('now', '-30 day') GROUP BY user_id ORDER BY count(*) DESC LIMIT 10"
         self.c.execute(stmt)
         user_downloads = self.c.fetchall()
         self.conn.close()
@@ -125,7 +125,7 @@ class db_users:
 
     def get_downloads_by_month(self):
         self.__init__()
-        stmt = "SELECT date_trunc('month', date) AS month, count(*) FROM downloads GROUP BY month ORDER BY month DESC LIMIT 12"
+        stmt = "SELECT strftime('%Y-%m', date) AS month, count(*) FROM downloads GROUP BY month ORDER BY month DESC LIMIT 12"
         self.c.execute(stmt)
         downloads_by_month = self.c.fetchall()
         self.conn.close()
@@ -151,7 +151,7 @@ class db_users:
         self.add_user(user_id)
 
         self.__init__()
-        stmt = "SELECT count(*) FROM downloads WHERE user_id = (?) AND date >= CURRENT_DATE"
+        stmt = "SELECT count(*) FROM downloads WHERE user_id = (?) AND date >= date('now')"
         args = (user_id,)
         self.c.execute(stmt, args)
         downloads_today = self.c.fetchone()[0]

@@ -33,13 +33,7 @@ db = db_users()
 load_dotenv()
 
 ADMIN_ID = int(getenv("ADMIN_ID"))
-ENV = getenv("ENV")
-
-if ENV == "prod":
-    TELEGRAM_TOKEN = getenv("TELEGRAM_TOKEN")
-else:
-    TELEGRAM_TOKEN = getenv("TEST_TELEGRAM_TOKEN")
-
+TELEGRAM_TOKEN = getenv("TELEGRAM_TOKEN")
 EMAIL_SENDER = getenv("EMAIL_SENDER")
 EMAIL_PASSWORD = getenv("EMAIL_PASSWORD")
 
@@ -53,7 +47,7 @@ MAX_SIZE_MB = 20
 EBOOK_FOLDER = "ebook/"
 
 # Kindle file extension
-KINDLE_EXTENSION = ".mobi"
+KINDLE_EXTENSION = ".epub"
 
 # Daily conversion limit per user
 DAILY_CONVERSION_LIMIT = 10

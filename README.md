@@ -75,16 +75,10 @@ services:
     environment:
       - TZ=Europe/Madrid
       - ADMIN_ID=9999999
-      - TELEGRAM_TOKEN=SuperLargeKey
-      - TEST_TELEGRAM_TOKEN=Optional
+      - TELEGRAM_TOKEN=YourSecretToken
       - EMAIL_SENDER=senderEmail@gmail.com
       - EMAIL_PASSWORD=StrongPassword
-      - PGHOST=postgresql
-      - PGDATABASE=dbname
-      - PGUSER=username
-      - PGPASSWORD=StrongPassword
-      - PGPORT=5623
-      - ENV=prod
+
     restart: unless-stopped
 ```
 
@@ -94,16 +88,9 @@ services:
 docker run -d \
   --name=kindle-calibre-bot \
   -e ADMIN_ID=9999999 \
-  -e TELEGRAM_TOKEN=SuperLargeKey \
-  -e TEST_TELEGRAM_TOKEN=Optional \
+  -e TELEGRAM_TOKEN=YourSecretToken \
   -e EMAIL_SENDER=senderEmail@gmail.com \
   -e EMAIL_PASSWORD=StrongPassword \
-  -e PGHOST=postgresql \
-  -e PGDATABASE=dbname \
-  -e PGUSER=username \
-  -e PGPASSWORD=StrongPassword \
-  -e PGPORT=5623 \
-  -e ENV=prod \
   --restart unless-stopped \
   acamposcar/kindle-calibre-bot:latest
 ```

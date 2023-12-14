@@ -1,8 +1,9 @@
-db.sqlite
+database.db
+log.log
 Docker
 *.bak
 synology.txt
-
+docker-compose.yml
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

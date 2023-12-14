@@ -1,12 +1,13 @@
 *.bak
+database.db
 synology.txt
-
+docker-compose.yml
 # Environments
 .env
 .venv
 env/
 venv/
 ENV/
-
+.github
 # Byte-compiled / optimized / DLL files
 __pycache__/

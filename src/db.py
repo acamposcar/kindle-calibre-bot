@@ -1,22 +1,13 @@
-import psycopg2
 from os import getenv
 from dotenv import load_dotenv
+import sqlite3
 
 load_dotenv()
-
-HOST = getenv("PGHOST")
-USER = getenv("PGUSER")
-PASSWORD = getenv("PGPASSWORD")
-DATABASE = getenv("PGDATABASE")
-PORT = getenv("PGPORT")
 
 
 class db_users:
     def __init__(self):
-
-        self.conn = psycopg2.connect(
-            host=HOST, database=DATABASE, user=USER, password=PASSWORD, port=PORT
-        )
+        self.conn = sqlite3.connect('./database/db.db')
         self.c = self.conn.cursor()
 
     def setup(self):
@@ -29,7 +20,6 @@ class db_users:
         self.c.execute(users_table)
         downloads_table = """
             CREATE TABLE IF NOT EXISTS downloads (
-            download_id SERIAL PRIMARY KEY, 
             user_id bigint references users(user_id) NOT NULL, 
             date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
             input text, 
@@ -43,7 +33,7 @@ class db_users:
     def add_user(self, user_id):
         self.__init__()
         stmt = (
-            "INSERT INTO users (user_id) VALUES (%s) ON CONFLICT (user_id) DO NOTHING;"
+            "INSERT INTO users (user_id) VALUES (?) ON CONFLICT (user_id) DO NOTHING;"
         )
         args = (user_id,)
         self.c.execute(stmt, args)
@@ -52,18 +42,22 @@ class db_users:
         self.conn.close()
 
     def update_email(self, user_id, user_email):
+        self.add_user(user_id)
+
         self.__init__()
-        stmt = "UPDATE users SET email=(%s) WHERE user_id=(%s)"
+        stmt = "UPDATE users SET email=(?) WHERE user_id=(?)"
         args = (user_email, user_id)
         self.c.execute(stmt, args)
         self.conn.commit()
         self.conn.close()
 
     def add_download(self, user_id, input_extension, output_extension, is_email):
-        self.__init__()
+        self.add_user(user_id)
 
+        self.__init__()
         # Increment user downloads
-        stmt = "INSERT INTO downloads(user_id, input, output, email) VALUES (%s, %s, %s, %s)"
+        
+        stmt = "INSERT INTO downloads(user_id, input, output, email) VALUES (?, ?, ?, ?)"
         args = (user_id, input_extension, output_extension, is_email)
         self.c.execute(stmt, args)
         self.conn.commit()
@@ -72,7 +66,8 @@ class db_users:
 
     def delete_email(self, user_id):
         self.__init__()
-        stmt = "UPDATE users SET email='' WHERE user_id=(%s)"
+        
+        stmt = "UPDATE users SET email='' WHERE user_id=(?)"
         args = (user_id,)
         self.c.execute(stmt, args)
         self.conn.commit()
@@ -80,7 +75,7 @@ class db_users:
 
     def is_banned(self, user_id):
         self.__init__()
-        stmt = "SELECT banned FROM users WHERE user_id = (%s)"
+        stmt = "SELECT banned FROM users WHERE user_id = (?)"
         args = (user_id,)
         self.c.execute(stmt, args)
         banned = self.c.fetchone()[0]
@@ -89,7 +84,7 @@ class db_users:
 
     def get_email(self, user_id):
         self.__init__()
-        stmt = "SELECT email FROM users WHERE user_id = (%s)"
+        stmt = "SELECT email FROM users WHERE user_id = (?)"
         args = (user_id,)
         self.c.execute(stmt, args)
         email = self.c.fetchone()[0]
@@ -153,8 +148,10 @@ class db_users:
         return users
 
     def get_user_downloads_today(self, user_id):
+        self.add_user(user_id)
+
         self.__init__()
-        stmt = "SELECT count(*) FROM downloads WHERE user_id = (%s) AND date >= CURRENT_DATE"
+        stmt = "SELECT count(*) FROM downloads WHERE user_id = (?) AND date >= CURRENT_DATE"
         args = (user_id,)
         self.c.execute(stmt, args)
         downloads_today = self.c.fetchone()[0]

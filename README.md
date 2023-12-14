@@ -35,8 +35,7 @@ A pre-built Docker image is available in the Docker Hub repository.
 ## Things you need (environment variables)
 
 - (TELEGRAM_TOKEN) Telegran Bot Authentication Token: create a [Telegram Bot](https://core.telegram.org/bots) with [Bot Father](https://t.me/botfather)
-- (PG*) PostgreSQL database
-- (EMAIL*) Google email to send the e-books to the Kindle
+- (EMAIL\*) Google email to send the e-books to the Kindle
 - (ADMIN_ID) Your [Telegram ID](https://www.alphr.com/telegram-find-user-id/)
 
 ## Usage
@@ -72,6 +71,7 @@ docker run -d \
   --restart unless-stopped \
   acamposcar/kindle-calibre-bot:latest
 ```
+
 <br>
 
 # Build your own image

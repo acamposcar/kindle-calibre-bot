@@ -178,9 +178,9 @@ async def update_email(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     user_id = update.message.chat.id
     text_received = update.message.text.lower()
 
-    if "@kindle.com" not in text_received or not validate_email(text_received):
+    if not validate_email(text_received):
         await update.message.reply_text(
-            "❌ That is not a valid email address. It should be xxx@kindle.com"
+            "❌ That is not a valid email address."
         )
         return
 

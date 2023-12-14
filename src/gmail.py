@@ -25,7 +25,7 @@ def send_email(sender_email, password, receiver_email, subject, body, file):
     with open(filename, "rb") as attachment:
         # Add file as application/octet-stream
         # Email client can usually download this automatically as attachment
-        part = MIMEBase("application", "octet-stream")
+        part = MIMEBase("application", "octet-stream", Name=file)
         part.set_payload(attachment.read())
 
     # Encode file in ASCII characters to send by email

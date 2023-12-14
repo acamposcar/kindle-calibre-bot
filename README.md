@@ -82,19 +82,17 @@ docker run -d \
 git clone https://github.com/acamposcar/kindle-calibre-bot.git
 ```
 
-2. Start your PostgreSQL database
+2. Create a [Telegram Bot](https://core.telegram.org/bots) with [Bot Father](https://t.me/botfather)
 
-3. Create a [Telegram Bot](https://core.telegram.org/bots) with [Bot Father](https://t.me/botfather)
+3. Edit .example.env file with your credentials and rename to .env
 
-4. Edit .example.env file with your credentials and rename to .env
-
-5. Building docker image
+4. Building docker image
 
 ```
 docker build -t kindle-calibre-bot .
 ```
 
-6. Running the docker container
+5. Running the docker container
 
 ```
 docker run --env-file .env kindle-calibre-bot

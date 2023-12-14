@@ -55,7 +55,8 @@ services:
       - TELEGRAM_TOKEN=YourSecretToken
       - EMAIL_SENDER=senderEmail@gmail.com
       - EMAIL_PASSWORD=StrongPassword
-
+    volumes:
+      - /path/to/your/folder:/kindle-calibre-bot/database
     restart: unless-stopped
 ```
 
@@ -68,6 +69,7 @@ docker run -d \
   -e TELEGRAM_TOKEN=YourSecretToken \
   -e EMAIL_SENDER=senderEmail@gmail.com \
   -e EMAIL_PASSWORD=StrongPassword \
+  -v /path/to/your/folder:/kindle-calibre-bot/database \
   --restart unless-stopped \
   acamposcar/kindle-calibre-bot:latest
 ```

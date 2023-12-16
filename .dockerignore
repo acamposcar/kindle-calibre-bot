@@ -11,3 +11,7 @@ ENV/
 .github
 # Byte-compiled / optimized / DLL files
 __pycache__/
+Dockerfile
+LICENSE.md
+README.md
+requirements.txt

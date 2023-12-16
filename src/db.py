@@ -13,20 +13,22 @@ class db_users:
     def setup(self):
         users_table = """
         CREATE TABLE IF NOT EXISTS users (
-            user_id bigint PRIMARY KEY, 
-            email text DEFAULT '', 
-            banned boolean DEFAULT false, 
-            joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"""
+        user_id integer PRIMARY KEY, 
+        email text DEFAULT '', 
+        banned integer DEFAULT 0, 
+        joined_at datetime DEFAULT CURRENT_TIMESTAMP)"""
         self.c.execute(users_table)
+
         downloads_table = """
-            CREATE TABLE IF NOT EXISTS downloads (
-            user_id bigint references users(user_id) NOT NULL, 
-            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-            input text, 
-            output text,
-            email boolean)
-            """
+        CREATE TABLE IF NOT EXISTS downloads (
+        user_id integer NOT NULL REFERENCES users(user_id), 
+        date datetime DEFAULT CURRENT_TIMESTAMP, 
+        input text, 
+        output text,
+        email integer)
+        """
         self.c.execute(downloads_table)
+        
         self.conn.commit()
         self.conn.close()
 

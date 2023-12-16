@@ -12,6 +12,7 @@ COPY requirements.txt /tmp/
 
 RUN pip3 install -r /tmp/requirements.txt
 
-COPY . /
+COPY . /kindle-calibre-bot/
 
+WORKDIR /kindle-calibre-bot
 CMD ["python3","/src/bot.py"]

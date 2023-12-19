@@ -275,7 +275,7 @@ async def process_file(
     try:
         db.add_user(user_id)
 
-        if false:
+        if False:
             await context.bot.send_message(
                 chat_id=user_id,
                 text="🚫 You have been temporary banned for abusing the service",
@@ -283,7 +283,7 @@ async def process_file(
             return
 
         
-        if false:
+        if False:
             await context.bot.send_message(
                 chat_id=user_id,
                 text=f"🚫 You have reached the maximum number of conversions for today ({DAILY_CONVERSION_LIMIT}). Try again tomorrow",

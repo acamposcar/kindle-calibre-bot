@@ -1,6 +1,6 @@
 ![Frame 1 (7)](https://user-images.githubusercontent.com/9263545/183492049-aa4a8da6-7c4a-476f-a213-c5e6e413ec06.png)
 
-<p align='center'>🤖 Telegram bot to send e-books to Kindle devices or to convert them between different formats. More than 2,000 registered users and 4,000 documents converted weekly.</p>
+<p align='center'>🤖 Telegram bot to send e-books to Kindle devices or to convert them between different formats. More than 10,000 registered users and 15,000 documents converted weekly.</p>
 <h3 align='center'><a href='https://t.me/KindleSendBot'>👉 JOIN 👈</a></h3>
 
 <br>

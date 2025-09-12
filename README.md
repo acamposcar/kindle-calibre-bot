@@ -36,6 +36,7 @@ A pre-built Docker image is available in the Docker Hub repository.
 
 - (TELEGRAM_TOKEN) Telegran Bot Authentication Token: create a [Telegram Bot](https://core.telegram.org/bots) with [Bot Father](https://t.me/botfather)
 - (EMAIL\*) Google email to send the e-books to the Kindle
+- (APP PASSWORD) Google email password doesn't work so you need to create [app password](https://myaccount.google.com/apppasswords) (2FA required to create app passwords)
 - (ADMIN_ID) Your [Telegram ID](https://www.alphr.com/telegram-find-user-id/)
 
 ## Usage
@@ -54,7 +55,7 @@ services:
       - ADMIN_ID=9999999
       - TELEGRAM_TOKEN=YourSecretToken
       - EMAIL_SENDER=senderEmail@gmail.com
-      - EMAIL_PASSWORD=StrongPassword
+      - EMAIL_PASSWORD=GoogleAppPassword
     volumes:
       - /path/to/your/folder:/kindle-calibre-bot/database
     restart: unless-stopped
@@ -68,7 +69,7 @@ docker run -d \
   -e ADMIN_ID=9999999 \
   -e TELEGRAM_TOKEN=YourSecretToken \
   -e EMAIL_SENDER=senderEmail@gmail.com \
-  -e EMAIL_PASSWORD=StrongPassword \
+  -e EMAIL_PASSWORD=GoogleAppPassword \
   -v /path/to/your/folder:/kindle-calibre-bot/database \
   --restart unless-stopped \
   acamposcar/kindle-calibre-bot:latest
